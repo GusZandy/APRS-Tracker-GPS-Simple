@@ -12,8 +12,8 @@
 // ========= PTT =========
 #define PTT_PIN          3         // D3 (INT1) pada Nano/Uno
 #define PTT_ACTIVE_HIGH  1         // 1=PTT aktif saat HIGH, 0=aktif saat LOW
-const uint16_t PREKEY_MS   = 800;  // tunggu sebelum kirim
-const uint16_t POSTKEY_MS  = 800;  // tahan PTT setelah kirim
+const uint16_t PREKEY_MS   = 500;  // tunggu sebelum kirim
+const uint16_t POSTKEY_MS  = 600;  // tahan PTT setelah kirim
 const uint16_t TX_GUARD_MS = 900;  // jeda tambahan agar modulasi tuntas
 
 // ========= Identitas & interval =========
@@ -81,8 +81,8 @@ void setup() {
   APRS_setCallsign((char*)MY_CALLSIGN, MY_SSID);
   APRS_setPath1("WIDE1", 2);   // = WIDE1-1
   // APRS_setPath2("WIDE2", 1);   // = WIDE2-1
-  APRS_setPreamble(500);       // tambah agar awal paket tak kepotong
-  APRS_setTail(50);
+  APRS_setPreamble(800);       // tambah agar awal paket tak kepotong
+  APRS_setTail(200);
   APRS_setSymbol('>');         // simbol mobil
 
   Serial.println(F("LibAPRS Nano Tracker siap"));
@@ -147,7 +147,7 @@ void loop() {
       delay(PREKEY_MS);
 
       // Hentikan baca GPS saat TX (hindari gangguan timing AFSK di AVR)
-      gpsSerial.end();
+      gpsSerial.stopListening();
 
       APRS_sendLoc(comment, strlen(comment));
 
@@ -157,8 +157,8 @@ void loop() {
       // Guard time agar modulasi benar-benar selesai
       delay(TX_GUARD_MS);
 
-      // Lanjutkan baca GPS
-      gpsSerial.begin(9600);
+      // aktifkan kembali RX GPS
+      gpsSerial.listen();
 
       // Debug
       Serial.print(F("TX @ "));
